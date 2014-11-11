@@ -258,7 +258,7 @@ Wallet.prototype.serialize = function() {
     return memo
   }, [])
 
-  return JSON.stringify({
+  return {
     externalAccount: this.externalAccount.toBase58(),
     internalAccount: this.internalAccount.toBase58(),
     addressIndex: this.addresses.length,
@@ -266,22 +266,22 @@ Wallet.prototype.serialize = function() {
     networkName: this.networkName,
     txs: txs,
     txMetadata: this.txMetadata
-  })
+  }
 }
 
-Wallet.deserialize = function(json) {
+Wallet.deserialize = function(obj) {
   var wallet = new Wallet()
-  var deserialized = JSON.parse(json)
-  wallet.externalAccount = bitcoin.HDNode.fromBase58(deserialized.externalAccount)
-  wallet.internalAccount = bitcoin.HDNode.fromBase58(deserialized.internalAccount)
-  wallet.addresses = deriveAddresses(wallet.externalAccount, deserialized.addressIndex)
-  wallet.changeAddresses = deriveAddresses(wallet.internalAccount, deserialized.changeAddressIndex)
-  wallet.networkName = deserialized.networkName
-  wallet.api = new API(deserialized.networkName)
-  wallet.txMetadata = deserialized.txMetadata
+
+  wallet.externalAccount = bitcoin.HDNode.fromBase58(obj.externalAccount)
+  wallet.internalAccount = bitcoin.HDNode.fromBase58(obj.internalAccount)
+  wallet.addresses = deriveAddresses(wallet.externalAccount, obj.addressIndex)
+  wallet.changeAddresses = deriveAddresses(wallet.internalAccount, obj.changeAddressIndex)
+  wallet.networkName = obj.networkName
+  wallet.api = new API(obj.networkName)
+  wallet.txMetadata = obj.txMetadata
 
   wallet.txGraph = new TxGraph()
-  deserialized.txs.forEach(function(hex) {
+  obj.txs.forEach(function(hex) {
     wallet.txGraph.addTx(bitcoin.Transaction.fromHex(hex))
   })
 
